@@ -3,11 +3,12 @@ import geopandas as gpd
 import pandas as pd
 import ast
 import streamlit as st
-from streamlit_folium import st_folium
+from streamlit_folium import st_folium, folium_static
 
-st.set_page_config(page_title='Youth Density',page_icon="random",layout='wide')
+st.set_page_config(page_title='Youth Density',page_icon="random")
 st.title('Youth Density Map')
-_map = fl.Map(location=[40.71,-74.0],zoom_start=10,tiles='CartoDB Positron')
+
+
 
 tracts = gpd.read_file('NY_Tracts.geojson')
 ythcnt = pd.read_csv('ythcnt.csv')
@@ -22,70 +23,203 @@ tracts.reset_index(inplace=True)
 feat_group = fl.FeatureGroup(name='Traditional Locations')
 sr_group = fl.FeatureGroup(name='SR Locations')
 exp_group = fl.FeatureGroup(name='Exploring Locations')
+age_mod = {'Cub Level':['cub_per_tract',[0,1,2.5,5,10,23],'cub_youth_total','female_cub_scouts','male_cub_scouts'],
+            'ScoutsBSA Level':['troop_per_tract',[0,1,2.5,5,10,23],'troop_youth_total','female_troop_scouts','male_troop_scouts']}
 
-district = st.sidebar.selectbox('District',['Bronx','Brooklyn','Manhattan',
+district = st.sidebar.selectbox('District',['All','Bronx','Brooklyn','Manhattan',
                                             'Queens','Staten Island',
                                             'Scoutreach','Exploring'])
-dist_dict = {'Bronx':['Bronx County',15],'Brooklyn':['Kings County',21,23],
-            'Manhattan':['New York County',30],'Queens':['Queens County',45,42,44],
-            'Staten Island':['Richmond County',50],
-            'Scoutreach':tracts.NAMELSADCO.unique().tolist().append([19,23,43]),
-            'Exploring':tracts.NAMELSADCO.unique().tolist().append([33,95,96])}
+map_type = st.sidebar.selectbox('Map Type',['Density','YOY Change'])
+program_mod = st.sidebar.checkbox('Adjust Program Data?')
+if program_mod:
+    program = st.sidebar.selectbox('Age Range',['Cub Level','ScoutsBSA Level'])
+    a_mod = age_mod[program][0]
+    bin = age_mod[program][1]
+    totes_youth = age_mod[program][2]
+    f_youth = age_mod[program][3]
+    m_youth = age_mod[program][4]
+else:
+    a_mod = 'scouts_per_tract'
+    bin = [0,1,2.5,5,10,15]
+    totes_youth = 'total_pop'
+    f_youth = 'female_scouts'
+    m_youth = 'male_scouts'
+sr_check = False
+exp_check = False
+if district in ['Bronx','Brooklyn','Manhattan','Queens']:
+    sr_check = st.sidebar.checkbox('Add Scoutreach?')
 
-choro = fl.Choropleth(
+if district in ['Bronx','Brooklyn','Manhattan','Queens','Staten Island']:
+    exp_check = st.sidebar.checkbox('Add Exploring?')
+
+
+
+all_items = [10]
+sr_items = [10]
+exp_items = [10]
+all_items.extend(tracts.NAMELSADCO.unique().tolist())
+all_items.extend(units.distID.unique().tolist())
+sr_items.extend(tracts.NAMELSADCO.unique().tolist())
+sr_items.extend([19,23,43])
+exp_items.extend(tracts.NAMELSADCO.unique().tolist())
+exp_items.extend([33,95,96])
+
+dist_dict = {'All':all_items,
+            'Bronx':[12,'Bronx County',15],'Brooklyn':[11,'Kings County',21,22],
+            'Manhattan':[11,'New York County',30],'Queens':[10,'Queens County',45,42,44],
+            'Staten Island':[11,'Richmond County',50],
+            'Scoutreach':sr_items,
+            'Exploring':exp_items}
+
+
+
+
+if len(dist_dict[district]) < 6:
+    geoids_yth = ythcnt[ythcnt['GEOID'].isin(tracts[tracts['NAMELSADCO']==dist_dict[district][1]].GEOID.unique().tolist())]
+else:
+    geoids_yth = ythcnt
+if exp_check:
+    temp = dist_dict[district]
+    temp.extend([95,96,33])
+    dist_dict.update({district:temp})
+
+if sr_check:
+    temp = dist_dict[district]
+    if str(temp[-1])[0] == '1':
+        temp.append(19)
+    elif str(temp[-1])[0] == '2':
+        temp.append(23)
+    elif str(temp[-1])[0] == '4':
+        temp.append(43)
+    else:
+        temp.extend([19,23,43])
+    dist_dict.update({district:temp})
+
+units = units[units['distID'].isin(dist_dict[district])]
+
+
+_map = fl.Map(location=[units.lat.mean(),units.lon.mean()],
+                    zoom_start=dist_dict[district][0],
+                    tiles='CartoDB Positron')
+
+
+#change_map = fl.Map(location=[units.lat.mean(),units.lon.mean()],
+#                zoom_start=dist_dict[district][0],
+#                tiles='CartoDB Positron')
+if map_type == 'Density':
+    choro = fl.Choropleth(
+                            geo_data=tracts[tracts['NAMELSADCO'].isin(dist_dict[district])],
+                            data=ythcnt,
+                            columns=['GEOID', a_mod],  #Here we tell folium to get the county fips and plot new_cases_7days metric for each county
+                            key_on='feature.properties.GEOID', #Here we grab the geometries/county boundaries from the geojson file using the key 'coty_code' which is the same as county fips #use the custom scale we created for legend
+                            fill_color='YlOrRd',
+                            bins=bin,
+                            nan_fill_color="White",
+                            nan_fill_opacity=0.0, #Use white color if there is no data available for the county
+                            fill_opacity=0.7,
+                            line_opacity=0.2,
+                            legend_name='Percent of TAY in Scouting', #title of the legend
+                            highlight=True,
+                            line_color='black',
+                            name='Percentage of Scouts')
+
+    choro.geojson.add_child(fl.GeoJsonPopup(fields=['GEOID',a_mod,totes_youth,
+                                                    f_youth,m_youth],
+                                            aliases=['Tract ','Percent of Scouts: ','Total Youth: ',
+                                                     'Female Scouts: ', 'Male Scouts: '],
+                                            sticky=True))
+else:
+    choro = fl.Choropleth(
                         geo_data=tracts[tracts['NAMELSADCO'].isin(dist_dict[district])],
                         data=ythcnt,
-                        columns=['GEOID', 'scouts_per_tract'],  #Here we tell folium to get the county fips and plot new_cases_7days metric for each county
+                        columns=['GEOID', '2023_difference_per_tract'],  #Here we tell folium to get the county fips and plot new_cases_7days metric for each county
                         key_on='feature.properties.GEOID', #Here we grab the geometries/county boundaries from the geojson file using the key 'coty_code' which is the same as county fips #use the custom scale we created for legend
-                        fill_color='YlOrRd',
-                        bins=[0,1,2.5,5,10,15],
-                        nan_fill_color="White", #Use white color if there is no data available for the county
+                        fill_color='RdYlGn',
+                        #bins=bin,
+                        nan_fill_color="White",
+                        nan_fill_opacity=0.0, #Use white color if there is no data available for the county
                         fill_opacity=0.7,
                         line_opacity=0.2,
-                        legend_name='Youth in each Tract', #title of the legend
+                        legend_name='Difference to 2022', #title of the legend
                         highlight=True,
                         line_color='black',
-                        name='Percentage of Scouts')
+                        name='Change vs. 2022')
+    choro.geojson.add_child(fl.GeoJsonPopup(fields=['GEOID',a_mod,totes_youth,
+                                                    f_youth,m_youth,'2023_difference_per_tract'],
+                                            aliases=['Tract ','Percent of Scouts: ','Total Youth: ',
+                                                     'Female Scouts: ', 'Male Scouts: ','YOY Change: '],
+                                            sticky=True))
 
-choro.geojson.add_child(fl.GeoJsonPopup(fields=['GEOID','scouts_per_tract','total_pop',
-                                                'female_scouts','male_scouts'],
-                                        aliases=['Tract ','Percent of Scouts: ','Total Youth: ',
-                                                 'Number of Female Scouts: ', 'Number of Male Scouts: '],
-                                        sticky=True))
-units = units[units['distID'].isin(dist_dict[district])]
+if program_mod:
+    if program == 'Cub Level':
+        units = units[units['UnitType'] == 'Pack']
+    elif program == 'ScoutsBSA Level':
+        units = units[units['UnitType'].isin(['Crew','Troop','Ship','Club','Post'])]
+
 for unit in units.itertuples():
     lat, lon = unit.lat_lon
 
-    disp = fl.Popup('Unit: ' + unit.Unit_Name+'\n\nYouth: '
+    disp = fl.Popup('Unit: ' + unit.Unit+'\n\nYouth: '
                     +str(unit.Youth)+'\n\nAddress: '
                     +unit.full_address,max_width='500%')
 
     if unit.distID in [19,43,23]:
         fl.CircleMarker(location=[lon,lat],
                         popup=disp,
-                        radius = 1,
+                        radius = 2,
                         width = 0,
-                        color='green').add_to(sr_group)
+                        color='red').add_to(sr_group)
     elif unit.distID in [95,96,33]:
         fl.CircleMarker(location=[lon,lat],
                         popup=disp,
-                        radius = 1,
+                        radius = 2,
                         width = 0,
                         color='black').add_to(exp_group)
     else:
-        fl.CircleMarker(location=[lon,lat],
+        fl.CircleMarker(location=[unit.lat,unit.lon],
                             popup=disp,
-                            radius = 1,
+                            radius = 2,
                             width = 0,
                             color='blue').add_to(feat_group)
 
 choro.add_to(_map)
-sr_group.add_to(_map)
-exp_group.add_to(_map)
+#choro_diff.add_to(change_map)
+if sr_check or district in ['All','Scoutreach']:
+    sr_group.add_to(_map)
+#    sr_group.add_to(change_map)
+if exp_check or district in ['All','Exploring']:
+    exp_group.add_to(_map)
+#    exp_group.add_to(change_map)
 feat_group.add_to(_map)
-fl.LayerControl().add_to(_map)
+#feat_group.add_to(change_map)
+
 _map.keep_in_front(feat_group,sr_group,exp_group)
+fl.LayerControl().add_to(_map)
 
 
-st_folium(_map,returned_objects=[])
+tab1, tab2 = st.tabs(['Metrics','Density Map'])
+
+with tab1:
+    col1, col2, col3 = st.columns(3,gap='small')
+    col4, col5, col6 = st.columns(3,gap='small')
+    col7, col8, col9 = st.columns(3,gap='small')
+
+
+    col1.metric('Total Scouts',int(geoids_yth[f_youth].sum()+geoids_yth[m_youth].sum()))
+    col2.metric('Female Scouts',int(geoids_yth[f_youth].sum()))
+    col3.metric('Male Scouts',int(geoids_yth[m_youth].sum()))
+    col4.metric('Percent of Youth Served',f'{round(((geoids_yth[f_youth].sum()+geoids_yth[m_youth].sum())/geoids_yth[totes_youth].sum())*100,2)}%')
+    col5.metric('Percent of Female Youth Served',f"{round((geoids_yth[f_youth].sum()/geoids_yth['female_troop_total'].sum())*100,2)}%")
+    col6.metric('Percent of Male Youth Served',f"{round((geoids_yth[m_youth].sum()/geoids_yth['male_troop_total'].sum())*100,2)}%")
+    col7.metric('Total Units',len(units))
+    #st.write('Top Identified Census Tracts for NAC')
+    #st.table(geoids_yth.sort_values(by=['scouts_per_tract'])[['GEOID','scouts_per_tract','num_scouts','total_pop','female_scouts','male_scouts']].head(10))
+with tab2:
+    st_map = folium_static(_map,height=500,width=700)
+
+#with tab3:
+    #fl.LayerControl().add_to(change_map)
+    #st_change_map = folium_static(change_map,height=350,width=500)
+
+
 #_map.save('gnyc_map.html')
