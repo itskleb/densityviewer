@@ -6,7 +6,7 @@ import streamlit as st
 from streamlit_folium import st_folium, folium_static
 
 st.set_page_config(page_title='Youth Density',page_icon="random")
-st.title('Youth Density Map')
+st.title('GNYC Youth Density Map')
 
 
 
