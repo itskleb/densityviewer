@@ -198,7 +198,7 @@ _map.keep_in_front(feat_group,sr_group,exp_group)
 fl.LayerControl().add_to(_map)
 
 
-tab1, tab2 = st.tabs(['Metrics','Density Map'])
+tab1, tab2 = st.tabs(['Metrics',f'{map_type} Map'])
 
 with tab1:
     col1, col2, col3 = st.columns(3,gap='small')
