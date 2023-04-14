@@ -186,10 +186,14 @@ for unit in units.itertuples():
 
 locals = fl.FeatureGroup(name='Neighborhoods',show=False)
 style = {'fillColor':'#000000','color':'#000000', 'weight':1}
+
 for _ , item in hoods.iterrows():
-    neigh = fl.GeoJson(data=item['geometry'], name='Neighborhoods',style_function= lambda x:style)
-    fl.Popup(item['neighborhood']).add_to(neigh)
-    neigh.add_to(locals)
+    if item['neighborhood'].isin(units.neighborhood.unique().to_list()):
+        neigh = fl.GeoJson(data=item['geometry'], name='Neighborhoods',style_function= lambda x:style)
+        fl.Popup(item['neighborhood']).add_to(neigh)
+        neigh.add_to(locals)
+    else:
+        pass
 locals.add_to(_map)
 
 choro.add_to(_map)
