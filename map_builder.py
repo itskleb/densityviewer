@@ -184,11 +184,13 @@ for unit in units.itertuples():
                             width = 0,
                             color='blue').add_to(feat_group)
 
-#neigh = fl.FeatureGroup(name='Neighborhoods',show=False)
-neigh = fl.GeoJson(data=hoods['geometry'], name='Neighborhoods')
-fl.Popup(hoods['neighborhood']).add_to(neigh)
+locals = fl.FeatureGroup(name='Neighborhoods',show=False)
 
-neigh.add_to(_map)
+for _ , item in hoods.iterrows():
+    neigh = fl.GeoJson(data=item['geometry'], name='Neighborhoods')
+    fl.Popup(item['neighborhood']).add_to(neigh)
+    neigh.add_to(locals)
+locals.add_to(_map)
 
 choro.add_to(_map)
 #choro_diff.add_to(change_map)
