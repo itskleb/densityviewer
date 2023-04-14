@@ -13,6 +13,7 @@ st.title('GNYC Youth Density Map')
 tracts = gpd.read_file('NY_Tracts.geojson')
 ythcnt = pd.read_csv('ythcnt.csv')
 units = pd.read_csv('unit_locations.csv')
+hoods = gpd.read_file('nyc_neighborhoods.geojson')
 units['lat_lon'] = units['lat_lon'].apply(lambda x: ast.literal_eval(x))
 #tracts_youth = tracts.join(ythcnt,on='GEOID',rsuffix='youth')
 tracts['GEOID'] = tracts['GEOID'].astype(str)
@@ -182,6 +183,8 @@ for unit in units.itertuples():
                             radius = 2,
                             width = 0,
                             color='blue').add_to(feat_group)
+
+fl.GeoJson(data=hoods['geometry'], name='Neighborhoods').add_to(_map)
 
 choro.add_to(_map)
 #choro_diff.add_to(change_map)
