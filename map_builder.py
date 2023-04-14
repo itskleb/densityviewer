@@ -186,7 +186,7 @@ for unit in units.itertuples():
 
 #neigh = fl.FeatureGroup(name='Neighborhoods',show=False)
 neigh = fl.GeoJson(data=hoods['geometry'], name='Neighborhoods')
-fl.Popup(zone['neighborhood']).add_to(neigh)
+fl.Popup(hoods['neighborhood']).add_to(neigh)
 
 neigh.add_to(_map)
 
