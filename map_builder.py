@@ -185,9 +185,9 @@ for unit in units.itertuples():
                             color='blue').add_to(feat_group)
 
 locals = fl.FeatureGroup(name='Neighborhoods',show=False)
-
+style = {'fillColor':'#000000','color':'#000000', 'weight':1}
 for _ , item in hoods.iterrows():
-    neigh = fl.GeoJson(data=item['geometry'], name='Neighborhoods')
+    neigh = fl.GeoJson(data=item['geometry'], name='Neighborhoods',style_function= lambda x:style)
     fl.Popup(item['neighborhood']).add_to(neigh)
     neigh.add_to(locals)
 locals.add_to(_map)
