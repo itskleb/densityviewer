@@ -188,7 +188,11 @@ locals = fl.FeatureGroup(name='Neighborhoods',show=False)
 style = {'fillColor':'#000000','color':'#000000', 'weight':1}
 
 for _ , item in hoods.iterrows():
-    if item['neighborhood'] in units.Neighborhood.unique().tolist():
+    if district in ['All','Scoutreach','Exploring']:
+        neigh = fl.GeoJson(data=item['geometry'], name='Neighborhoods',style_function= lambda x:style)
+        fl.Popup(item['neighborhood']).add_to(neigh)
+        neigh.add_to(locals)
+    elif item['borough'] == district:
         neigh = fl.GeoJson(data=item['geometry'], name='Neighborhoods',style_function= lambda x:style)
         fl.Popup(item['neighborhood']).add_to(neigh)
         neigh.add_to(locals)
