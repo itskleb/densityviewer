@@ -4,10 +4,53 @@ import pandas as pd
 import ast
 import streamlit as st
 from streamlit_folium import st_folium, folium_static
+import fitz
+import pdfkit
+from PIL import Image
+from io import BytesIO
+
+
 
 st.set_page_config(page_title='Youth Density',page_icon="chart-with-upwards-trend")
 st.title('GNYC Youth Density Map')
 
+
+def convert_map_png(folium_map, file_name):
+  mapName = file_name
+
+  # Get HTML File of Map
+  folium_map.save(mapName + '.html')
+  htmlfile = mapName + '.html'
+
+  # Convert Map from HTML to PDF, Delay to Allow Rendering
+  options = {'javascript-delay': 500,
+    'page-size': 'Letter',
+    'margin-top': '0.0in',
+    'margin-right': '0.0in',
+    'margin-bottom': '0.0in',
+    'margin-left': '0.0in',
+    'encoding': "UTF-8",
+    'custom-header': [
+        ('Accept-Encoding', 'gzip')
+    ]}
+  pdfkit.from_file(htmlfile,  (mapName + '.pdf'), options=options)
+  pdffile = mapName + '.pdf'
+
+  # Convert Map from PDF to PNG
+  doc = fitz.open(pdffile)
+  page = doc.load_page(0)
+  pix = page.get_pixmap()
+  output = mapName + '.png'
+  pix.save(output)
+  pngfile = mapName + '.png'
+  doc.close()
+
+  # Crop Out Map Image
+  pilImage = Image.open(pngfile)
+
+  croppedImage = pilImage.crop((0,0,287,287)) # Adjust this if your map renders differently on PDF
+
+  return croppedImage
 
 
 tracts = gpd.read_file('NY_Tracts.geojson')
@@ -234,6 +277,16 @@ with tab1:
     #st.table(geoids_yth.sort_values(by=['scouts_per_tract'])[['GEOID','scouts_per_tract','num_scouts','total_pop','female_scouts','male_scouts']].head(10))
 with tab2:
     st_map = folium_static(_map,height=500,width=700)
+
+    pngmap = convert_map_png(_map,'gnyc_density_map')
+    buf=BytesIO()
+    pngmap.save(buf,format="PNG")
+    byte_im = buf.getvalue()
+    dwnld = st.download_button(label='Download Map Image',
+                                data=byte_im,
+                                file_name='gnyc_density_map.png',
+                                mime='image/png')
+
 
 #with tab3:
     #fl.LayerControl().add_to(change_map)
