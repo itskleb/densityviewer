@@ -20,7 +20,7 @@ def convert_map_png(folium_map, file_name):
 
   # Get HTML File of Map
   folium_map.save(mapName + '.html')
-  htmlfile = mapName + '.html'
+  htmlfile = folium_map.get_root().render()
 
   # Convert Map from HTML to PDF, Delay to Allow Rendering
   options = {'javascript-delay': 500,
@@ -33,7 +33,7 @@ def convert_map_png(folium_map, file_name):
     'custom-header': [
         ('Accept-Encoding', 'gzip')
     ]}
-  pdfkit.from_file(folium_map._repr_html_(),  (mapName + '.pdf'), options=options)
+  pdfkit.from_string(htmlfile,  (mapName + '.pdf'), options=options)
   pdffile = mapName + '.pdf'
 
   # Convert Map from PDF to PNG
