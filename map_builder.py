@@ -33,7 +33,7 @@ def convert_map_png(folium_map, file_name):
     'custom-header': [
         ('Accept-Encoding', 'gzip')
     ]}
-  pdfkit.from_file(folium_map.save(mapName+'.html'),  (mapName + '.pdf'), options=options)
+  pdfkit.from_file(folium_map.repr_html(),  (mapName + '.pdf'), options=options)
   pdffile = mapName + '.pdf'
 
   # Convert Map from PDF to PNG
