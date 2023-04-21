@@ -33,7 +33,7 @@ def convert_map_png(folium_map, file_name):
     'custom-header': [
         ('Accept-Encoding', 'gzip')
     ]}
-  pdfkit.from_file(htmlfile,  (mapName + '.pdf'), options=options)
+  pdfkit.from_file(folium_map.save(mapName+'.html'),  (mapName + '.pdf'), options=options)
   pdffile = mapName + '.pdf'
 
   # Convert Map from PDF to PNG
@@ -257,6 +257,10 @@ feat_group.add_to(_map)
 _map.keep_in_front(feat_group,sr_group,exp_group)
 fl.LayerControl().add_to(_map)
 
+pngmap = convert_map_png(_map,'gnyc_density_map')
+buf=BytesIO()
+pngmap.save(buf,format="PNG")
+byte_im = buf.getvalue()
 
 tab1, tab2 = st.tabs(['Metrics',f'{map_type} Map'])
 
@@ -278,10 +282,6 @@ with tab1:
 with tab2:
     st_map = folium_static(_map,height=500,width=700)
 
-    pngmap = convert_map_png(_map,'gnyc_density_map')
-    buf=BytesIO()
-    pngmap.save(buf,format="PNG")
-    byte_im = buf.getvalue()
     dwnld = st.download_button(label='Download Map Image',
                                 data=byte_im,
                                 file_name='gnyc_density_map.png',
