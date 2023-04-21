@@ -15,7 +15,7 @@ st.set_page_config(page_title='Youth Density',page_icon="chart-with-upwards-tren
 st.title('GNYC Youth Density Map')
 
 
-"""def convert_map_png(folium_map, file_name):
+def convert_map_png(folium_map, file_name):
   mapName = file_name
 
   # Get HTML File of Map
@@ -50,7 +50,7 @@ st.title('GNYC Youth Density Map')
 
   croppedImage = pilImage.crop((0,0,287,287)) # Adjust this if your map renders differently on PDF
 
-  return croppedImage"""
+  return croppedImage
 
 
 tracts = gpd.read_file('NY_Tracts.geojson')
@@ -278,10 +278,10 @@ with tab1:
 with tab2:
     st_map = folium_static(_map,height=500,width=700)
 
-    """pngmap = convert_map_png(_map,'gnyc_density_map')
+    pngmap = convert_map_png(_map,'gnyc_density_map')
     buf=BytesIO()
     pngmap.save(buf,format="PNG")
-    byte_im = buf.getvalue()"""
+    byte_im = buf.getvalue()
     dwnld = st.download_button(label='Download Map Image',
                                 data=byte_im,
                                 file_name='gnyc_density_map.png',
