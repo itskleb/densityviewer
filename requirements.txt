@@ -5,3 +5,6 @@ geopandas
 pandas
 numpy
 pdfkit
+fitz
+io
+PIL
