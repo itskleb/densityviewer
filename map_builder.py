@@ -5,9 +5,9 @@ import ast
 import streamlit as st
 from streamlit_folium import st_folium, folium_static
 #import fitz
-#import pdfkit
-#from PIL import Image
-#from io import BytesIO
+import pdfkit
+from PIL import Image
+from io import BytesIO
 
 
 
