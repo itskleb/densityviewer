@@ -42,7 +42,7 @@ if program_mod:
     m_youth = age_mod[program][4]
 else:
     a_mod = 'scouts_per_tract'
-    bin = [0,1,2.5,5,10,45]
+    bin = [0,1,2.5,5,10,101]
     totes_youth = 'total_pop'
     f_youth = 'female_scouts'
     m_youth = 'male_scouts'
