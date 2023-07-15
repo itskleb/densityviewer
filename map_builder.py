@@ -25,8 +25,8 @@ tracts.reset_index(inplace=True)
 feat_group = fl.FeatureGroup(name='Traditional Locations')
 sr_group = fl.FeatureGroup(name='SR Locations')
 exp_group = fl.FeatureGroup(name='Exploring Locations')
-age_mod = {'Cub Level':['cub_per_tract',[0,1,2.5,5,10,23],'cub_youth_total','female_cub_scouts','male_cub_scouts'],
-            'ScoutsBSA Level':['troop_per_tract',[0,1,2.5,5,10,23],'troop_youth_total','female_troop_scouts','male_troop_scouts']}
+age_mod = {'Cub Level':['cub_per_tract',[0,1,2.5,5,10,300],'cub_youth_total','female_cub_scouts','male_cub_scouts'],
+            'ScoutsBSA Level':['troop_per_tract',[0,1,2.5,5,10,300],'troop_youth_total','female_troop_scouts','male_troop_scouts']}
 
 district = st.sidebar.selectbox('District',['All','Bronx','Brooklyn','Manhattan',
                                             'Queens','Staten Island',
