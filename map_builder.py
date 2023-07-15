@@ -25,8 +25,8 @@ tracts.reset_index(inplace=True)
 feat_group = fl.FeatureGroup(name='Traditional Locations')
 sr_group = fl.FeatureGroup(name='SR Locations')
 exp_group = fl.FeatureGroup(name='Exploring Locations')
-age_mod = {'Cub Level':['cub_per_tract',[0,1,2.5,5,10,1000],'cub_youth_total','female_cub_scouts','male_cub_scouts'],
-            'ScoutsBSA Level':['troop_per_tract',[0,1,2.5,5,10,1000],'troop_youth_total','female_troop_scouts','male_troop_scouts']}
+age_mod = {'Cub Level':['cub_per_tract',[0,1,2.5,5,10,ythcnt['cub_per_tract'].max()],'cub_youth_total','female_cub_scouts','male_cub_scouts'],
+            'ScoutsBSA Level':['troop_per_tract',[0,1,2.5,5,10,ythcnt['troop_per_tract'].max()],'troop_youth_total','female_troop_scouts','male_troop_scouts']}
 
 district = st.sidebar.selectbox('District',['All','Bronx','Brooklyn','Manhattan',
                                             'Queens','Staten Island',
@@ -42,7 +42,7 @@ if program_mod:
     m_youth = age_mod[program][4]
 else:
     a_mod = 'scouts_per_tract'
-    bin = [0,1,2.5,5,10,301]
+    bin = [0,1,2.5,5,10,ythcnt['scouts_per_tract'].max()]
     totes_youth = 'total_pop'
     f_youth = 'female_scouts'
     m_youth = 'male_scouts'
