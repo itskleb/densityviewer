@@ -115,7 +115,7 @@ if map_type == 'Density':
                             columns=['GEOID', a_mod],  #Here we tell folium to get the county fips and plot new_cases_7days metric for each county
                             key_on='feature.properties.GEOID', #Here we grab the geometries/county boundaries from the geojson file using the key 'coty_code' which is the same as county fips #use the custom scale we created for legend
                             fill_color='YlOrRd',
-                            #bins=bin,
+                            bins=5,
                             nan_fill_color="White",
                             nan_fill_opacity=0.0, #Use white color if there is no data available for the county
                             fill_opacity=0.7,
