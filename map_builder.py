@@ -42,7 +42,7 @@ if program_mod:
     m_youth = age_mod[program][4]
 else:
     a_mod = 'scouts_per_tract'
-    bin = [0,1,2.5,5,10,101]
+    bin = [0,1,2.5,5,10,301]
     totes_youth = 'total_pop'
     f_youth = 'female_scouts'
     m_youth = 'male_scouts'
@@ -115,7 +115,7 @@ if map_type == 'Density':
                             columns=['GEOID', a_mod],  #Here we tell folium to get the county fips and plot new_cases_7days metric for each county
                             key_on='feature.properties.GEOID', #Here we grab the geometries/county boundaries from the geojson file using the key 'coty_code' which is the same as county fips #use the custom scale we created for legend
                             fill_color='YlOrRd',
-                            bins=5,
+                            bins=bin,
                             nan_fill_color="White",
                             nan_fill_opacity=0.0, #Use white color if there is no data available for the county
                             fill_opacity=0.7,
