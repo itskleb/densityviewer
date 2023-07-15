@@ -137,7 +137,7 @@ else:
                         columns=['GEOID', '2023_difference_per_tract'],  #Here we tell folium to get the county fips and plot new_cases_7days metric for each county
                         key_on='feature.properties.GEOID', #Here we grab the geometries/county boundaries from the geojson file using the key 'coty_code' which is the same as county fips #use the custom scale we created for legend
                         fill_color='RdYlGn',
-                        bins = [-8,-5,-2,-1,-0.5,0,0.5,1,2,5,10],
+                        bins = 10,#[-8,-5,-2,-1,-0.5,0,0.5,1,2,5,10],
                         #bins=list(ythcnt['2023_difference_per_tract'].quantile([0,0.25,0.5,0.75,1])),
                         nan_fill_color="White",
                         nan_fill_opacity=0.0, #Use white color if there is no data available for the county
